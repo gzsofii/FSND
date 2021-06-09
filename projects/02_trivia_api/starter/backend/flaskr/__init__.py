@@ -174,13 +174,24 @@ def create_app(test_config=None):
     category = body["quiz_category"]["id"]
     previous_questions = body["previous_questions"] # IDs in an array
 
-    all_questions = Question.query \
-                  .filter(Question.category==category) \
-                  .order_by(func.random()) \
-                  .all()
+    if category==0:
+      print('categories: all')
+      all_questions = Question.query \
+                      .order_by(func.random()) \
+                      .all()
+
+    else:
+      print('category: ', category)
+      all_questions = Question.query \
+                      .filter(Question.category==category) \
+                      .order_by(func.random()) \
+                      .all()
+    
     total = len(all_questions)
+    
 
     if total == len(previous_questions):
+      print('prev:', previous_questions)
       return jsonify({ # end of questions
         "success": True,
         "question": None
