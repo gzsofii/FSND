@@ -61,29 +61,28 @@ def create_app(test_config=None):
       "questions": current_questions,
       "total_questions": total,
       "categories": categories_dict,
-      "current_category": None
+      #"current_category": None
     })
 
   @app.route('/categories/<cat_id>/questions', methods=['GET'])
   def get_questions_with_given_category(cat_id):
+    cat = Category.query.filter(Category.id == cat_id).one_or_none()
+    if cat is None:
+      #print("no category exists with id", cat_id)
+      abort(404)
+
+    questions = Question.query \
+                .filter(Question.category==cat_id) \
+                .order_by(Question.id) \
+                .all()
+    total = len(questions)
+    current_questions = paginate_questions(request, questions)
+
+    if len(current_questions) == 0:
+      #print("no questions with category ", cat_id)
+      abort(404)
+
     try:
-      cat = Category.query.filter(Category.id == cat_id).one_or_none()
-      print(cat)
-      if cat is None:
-        print("no category exists with id", cat_id)
-        abort(404)
-
-      questions = Question.query \
-                  .filter(Question.category==cat_id) \
-                  .order_by(Question.id) \
-                  .all()
-      total = len(questions)
-      current_questions = paginate_questions(request, questions)
-
-      if len(current_questions) == 0:
-        print("no questions with category ", cat_id)
-        abort(404)
-
       return jsonify({
         "success": True,
         "questions": current_questions,
@@ -100,8 +99,6 @@ def create_app(test_config=None):
     
     try:
       if term:
-        print(term)
-
         questions = Question.query \
                       .filter(Question.question.ilike('%{}%'.format(term))) \
                       .order_by(Question.id) \
@@ -111,14 +108,14 @@ def create_app(test_config=None):
 
         return jsonify({
           "success": True,
-          "questions": current_questions,
+          "questions": current_questions, # it sends [] if there are no results
           "total_questions": total,
-          "current_category": None
+          #"current_category": None
         })
 
       else:
         data = request.get_json()
-        
+                
         question = Question(data["question"], data["answer"], data["category"], data["difficulty"])
         question.insert()
 
@@ -131,13 +128,14 @@ def create_app(test_config=None):
 
   @app.route('/questions/<q_id>', methods=['DELETE'])
   def delete_question(q_id):
-    try:
-      question = Question.query.get(q_id)
-      print('deleting question with id ', q_id)
-      if question is None:
-        abort(404)
-      question.delete()
+  
+    question = Question.query.get(q_id)
+    #print('deleting question with id ', q_id)
+    if question is None:
+      abort(404)
+    question.delete()
 
+    try:
       return jsonify({
         "success": True
       })
@@ -169,51 +167,52 @@ def create_app(test_config=None):
     '''
   @app.route('/quizzes', methods=['POST'])
   def get_next_question():
-    body = request.get_json()
+    try:
+      body = request.get_json()
 
-    category = body["quiz_category"]["id"]
-    previous_questions = body["previous_questions"] # IDs in an array
+      category = body["quiz_category"]["id"]
+      previous_questions = body["previous_questions"] # IDs in an array
 
-    if category==0:
-      print('categories: all')
-      all_questions = Question.query \
-                      .order_by(func.random()) \
-                      .all()
+      if category==0:
+        #print('categories: all')
+        all_questions = Question.query \
+                        .order_by(func.random()) \
+                        .all()
 
-    else:
-      print('category: ', category)
-      all_questions = Question.query \
-                      .filter(Question.category==category) \
-                      .order_by(func.random()) \
-                      .all()
-    
-    total = len(all_questions)
-    
-
-    if total == len(previous_questions):
-      print('prev:', previous_questions)
-      return jsonify({ # end of questions
-        "success": True,
-        "question": None
-      })
-
-    i = 0
-    found = False
-    while not found and i < total:
-      question = all_questions[i]
-      print(question.id)
-      if question.id in previous_questions:
-        i = i + 1
       else:
-        found = True
-        return jsonify({
+        #print('category: ', category)
+        all_questions = Question.query \
+                        .filter(Question.category==category) \
+                        .order_by(func.random()) \
+                        .all()
+      
+      total = len(all_questions)
+
+      if total == len(previous_questions):
+        return jsonify({ # end of questions
           "success": True,
-          "question": all_questions[i].format(),
+          "question": None
         })
+
+      i = 0
+      found = False
+      while not found and i < total:
+        question = all_questions[i]
+        if question.id in previous_questions:
+          i = i + 1
+        else:
+          found = True
+          return jsonify({
+            "success": True,
+            "question": all_questions[i].format(),
+          })
+
+    except:
+      abort(422)
     
   @app.errorhandler(400)
   def bad_request(error):
-    print('error: bad request')
+    #print('error: bad request')
     return jsonify({
       "success": False, 
       "error": 400,
@@ -222,7 +221,7 @@ def create_app(test_config=None):
 
   @app.errorhandler(404)
   def not_found(error):
-    print('error: not found')
+    #print('error: not found')
     return jsonify({
       "success": False, 
       "error": 404,
@@ -231,7 +230,7 @@ def create_app(test_config=None):
 
   @app.errorhandler(422)
   def unprocessable(error):
-    print('error: unprocessable')
+    #print('error: unprocessable')
     return jsonify({
       "success": False, 
       "error": 422,

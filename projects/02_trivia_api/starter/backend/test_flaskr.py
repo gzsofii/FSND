@@ -63,7 +63,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["questions"]),True)
         self.assertEqual(data["current_category"], cat_name)
 
-    '''def test_get_questions_invalid_category(self):
+    def test_get_questions_invalid_category(self):
         cat_id = 10
         res = self.client().get('/categories/' + str(cat_id) + '/questions')
         data = json.loads(res.data)
@@ -71,7 +71,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404) 
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "resource not found")
-    '''
+    
 
     def test_search_question_with_result(self):
         term = "what"
@@ -162,7 +162,7 @@ class TriviaTestCase(unittest.TestCase):
         res_new_questions = self.client().get('/questions')
         new_length = json.loads(res_new_questions.data)["total_questions"]
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(new_length, old_length) # number of questions didn't change
 
