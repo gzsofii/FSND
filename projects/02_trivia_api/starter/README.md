@@ -1,52 +1,181 @@
-# Full Stack API Final Project
+# Documentation
+Trivia - a web application to play quizzes.
+A project within the Udacity Fullstack Developer Course.
+## How to start server
+### Installation
+Required:
+- Python 3.7
+- pip 
 
+Install dependencies: 
+`pip install -r requirements.txt`
 
-## Full Stack Trivia
+### Run server
+`flask run`
 
-Udacity is invested in creating bonding experiences for its employees and students. A bunch of team members got the idea to hold trivia on a regular basis and created a webpage to manage the trivia app and play the game, but their API experience is limited and still needs to be built out.
+## API
+### Getting started
+Base url: `http://127.0.0.1:5000/`. The app currently can be run only locally. 
 
-That's where you come in! Help them finish the trivia app so they can start holding trivia and seeing who's the most knowledgeable of the bunch. The application must:
+### Endpoints
+#### GET /questions
+- Returns max. 10 questions according to pagination. The page number can be set as a request argument, default is 1.
+- Response includes a dict of all categories, an array of the questions from the given page and the number of total questions.
+- Sample request: `curl http://127.0.0.1:5000/questions?page=2`
+- Sample response:
+```
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+   
+    {
+      "answer": "The Liver", 
+      "category": 1, 
+      "difficulty": 4, 
+      "id": 20, 
+      "question": "What is the heaviest organ in the human body?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 20
+}
+```
+#### GET /categories/{cat_id}/questions
+- Returns questions belonging to the given category with pagination.
+- Sample request: `curl http://127.0.0.1:5000/categories/2/questions`
+- Sample response:
+```
+{
+  "current_category": "Art", 
+  "questions": [
+    {
+      "answer": "Mona Lisa", 
+      "category": 2, 
+      "difficulty": 3, 
+      "id": 17, 
+      "question": "La Giaconda is better known as what?"
+    }, 
+    {
+      "answer": "One", 
+      "category": 2, 
+      "difficulty": 4, 
+      "id": 18, 
+      "question": "How many paintings did Van Gogh sell in his lifetime?"
+    }, 
+    {
+      "answer": "Jackson Pollock", 
+      "category": 2, 
+      "difficulty": 2, 
+      "id": 19, 
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 3
+}
+```
 
-1. Display questions - both all questions and by category. Questions should show the question, category and difficulty rating by default and can show/hide the answer.
-2. Delete questions.
-3. Add questions and require that they include question and answer text.
-4. Search for questions based on a text query string.
-5. Play the quiz game, randomizing either all questions or within a specific category.
+#### POST /questions
+1. Search question
+- The search term has to be given in a json object with key `searchTerm`
+- Sample request: `curl -X POST http://127.0.0.1:5000/questions -H 'Content-Type: application/json' -d '{"searchTerm": "tom"}'`
+- Sample response:
+```
+{
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 1
+}
+```
+2. Add new question
+- The details of the new question (question, answer, category, difficulty) have to be given in a json object with the mentioned keys
+- Sample request: `curl -X POST http://127.0.0.1:5000/questions -H 'Content-Type: application/json' -d '{"question": "What is the smallest odd number?", "answer": "1", "category": "1", "difficulty": "1"}'`
+- Sample response: 
+```
+{
+  "success": true
+}
+```
 
-Completing this trivia app will give you the ability to structure plan, implement, and test an API - skills essential for enabling your future applications to communicate with others.
+#### DELETE /questions/{id}
+- Deletes question with given id from the database
+- Sample request: `curl -X DELETE http://127.0.0.1:5000/questions/5`
+- Sample response:
+```
+{
+  "success": true
+}
+```
 
-## Starting and Submitting the Project
+#### GET /categories
+- Lists available categories
+- Sample request: `curl -X GET http://127.0.0.1:5000/categories`
+- Sample response:
+```
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "success": true
+}
+```
+#### POST /quizzes
+- Returns a next question from the given category, which is not included in the given list of the previous questions
+- Request parameters: 
+    -`quiz_category`: josn object with keys `type` and `id`
+    -`previous_questions`: array of question IDs
+- Sample request: `curl -X POST http://127.0.0.1:5000/quizzes -H 'Content-Type: application/json' -d '{"quiz_category": {"type": "Science", "id": "1"}, "previous_questions": [] }'`
+- Sample response:
+```
+{
+  "question": {
+    "answer": "Alexander Fleming", 
+    "category": 1, 
+    "difficulty": 3, 
+    "id": 21, 
+    "question": "Who discovered penicillin?"
+  }, 
+  "success": true
+}
+```
+### Error handling
+Errors are returned as JSON objects in the following format:
+```
+{
+    "success": False, 
+    "error": 400,
+    "message": "bad request"
+}
+```
 
-[Fork](https://help.github.com/en/articles/fork-a-repo) the [project repository](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter) and [Clone](https://help.github.com/en/articles/cloning-a-repository) your forked repository to your machine. Work on the project locally and make sure to push all your changes to the remote repository before submitting the link to your repository in the Classroom.
->Once you're ready, you can submit your project on the last page.
-
-## About the Stack
-
-We started the full stack application for you. It is designed with some key functional areas:
-
-### Backend
-The [./backend](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter/backend/README.md) directory contains a partially completed Flask and SQLAlchemy server. You will work primarily in `__init__.py` to define your endpoints and can reference models.py for DB and SQLAlchemy setup. These are the files you'd want to edit in the backend:
-
-1. *./backend/flaskr/`__init__.py`*
-2. *./backend/test_flaskr.py*
-
-
-### Frontend
-
-The [./frontend](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter/frontend/README.md) directory contains a complete React frontend to consume the data from the Flask server. If you have prior experience building a frontend application, you should feel free to edit the endpoints as you see fit for the backend you design. If you do not have prior experience building a frontend application, you should read through the frontend code before starting and make notes regarding:
-
-1. What are the end points and HTTP methods the frontend is expecting to consume?
-2. How are the requests from the frontend formatted? Are they expecting certain parameters or payloads? 
-
-Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. The places where you may change the frontend behavior, and where you should be looking for the above information, are marked with `TODO`. These are the files you'd want to edit in the frontend:
-
-1. *./frontend/src/components/QuestionView.js*
-2. *./frontend/src/components/FormView.js*
-3. *./frontend/src/components/QuizView.js*
-
-
-By making notes ahead of time, you will practice the core skill of being able to read and understand code and will have a simple plan to follow to build out the endpoints of your backend API. 
-
-
-
->View the [README within ./frontend for more details.](./frontend/README.md)
+The following errors are possible:
+- 400: bad request
+- 404: resource not found
+- 422: unprocessable
