@@ -27,14 +27,12 @@ class TriviaTestCase(unittest.TestCase):
         with self.app.app_context():
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
-            #self.db.session.remove()
-            #self.db.drop_all()
-            # create all tables
+
+            self.db.drop_all()
             self.db.create_all()
     
     def tearDown(self):
-        with self.app.app_context():
-            self.db.drop_all()
+        pass
         
 
     """
@@ -141,8 +139,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(old_length, new_length) # number of questions didn't change
 
-    '''def test_delete_question(self):
-        q_id = 37
+    def test_delete_question(self):
+        q_id = 2
 
         res_old_questions = self.client().get('/questions')
         old_length = json.loads(res_old_questions.data)["total_questions"]
@@ -156,7 +154,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(new_length+1, old_length)
-    '''
+    
 
     def test_delete_question_fail(self):
         q_id = 20121
