@@ -137,6 +137,7 @@ export class DrinksService {
   drinksToItems( drinks: Array<Drink>) {
     for (const drink of drinks) {
       this.items[drink.id] = drink;
+      console.log(drink)
     }
   }
 }
